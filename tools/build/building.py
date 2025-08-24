@@ -2373,7 +2373,7 @@ def SifliGccEnv(cpu):
     rtconfig.CFLAGS += ' -fno-unwind-tables -fno-exceptions'
     rtconfig.CFLAGS += ' -fno-common'
     
-    rtconfig.CFLAGS += ' -Os -D_GNU_SOURCE'
+    rtconfig.CFLAGS += ' -Os'
     rtconfig.CXXFLAGS = rtconfig.CFLAGS
     if no_dsp_fp:
         rtconfig.CXXFLAGS += ' -fno-exceptions -fno-rtti'
