@@ -135,6 +135,8 @@ typedef enum
     SPI_FLASH_CMD_RDP, /*!< Release from Deep Power-Down, NOR    */
     SPI_FLASH_CMD_DTR4R, /*!< DTR 4 IO Read, NOR    */
     SPI_FLASH_CMD_RDSFDP, /*!< Read SFDP(Serial Flash Discoverable Parameter), NOR    */
+    SPI_FLASH_CMD_ENSO, /*!< Enter Secured OTP, NOR */
+    SPI_FLASH_CMD_EXSO, /*!< Exit Secured OTP, NOR    */
     SPI_FLASH_CMD_COUNT /*!< current support flash command     */
 } SPI_FLASH_CMD_E;
 

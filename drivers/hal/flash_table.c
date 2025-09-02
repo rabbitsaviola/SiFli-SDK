@@ -408,12 +408,12 @@ __weak FT_CONST SPI_FLASH_FACT_CFG_T flash_cmd_table_list[] =
         0x39,
         0x0,
         0x0,
-        0x0,
+        0x2,
         0x3c,
         0x60,
         0x0,
         0x0,
-        0x0,
+        0x1,
         4096,
         {
             {0x06, 0, 0, 0, 0, 0, 0, 0, 1}, /* SPI_FLASH_CMD_WREN*/
@@ -473,6 +473,8 @@ __weak FT_CONST SPI_FLASH_FACT_CFG_T flash_cmd_table_list[] =
             {0xab, 0, 0, 0, 0, 0, 0, 0, 1}, /* SPI_FLASH_CMD_RDP*/
             {0x00, 0, 0, 0, 0, 0, 0, 0, 0}, /* SPI_FLASH_CMD_DTR4R*/
             {0x5a, 0, 1, 8, 0, 0, 2, 1, 1}, /* SPI_FLASH_CMD_RDSFDP*/
+            {0xb1, 0, 0, 0, 0, 0, 0, 0, 1}, /* SPI_FLASH_CMD_ENSO*/
+            {0xc1, 0, 0, 0, 0, 0, 0, 0, 1}, /* SPI_FLASH_CMD_EXSO*/
         }
     },
 #endif

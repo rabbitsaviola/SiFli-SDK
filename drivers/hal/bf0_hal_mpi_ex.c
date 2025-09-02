@@ -2500,6 +2500,13 @@ __HAL_ROM_USED int HAL_QSPI_ERASE_OTP(FLASH_HandleTypeDef *hflash, uint32_t addr
     if (addr < SPI_FLASH_OTP_BASE || addr > SPI_FLASH_OTP_BASE + (hflash->ctable->mode_reg << 12))
         return -1;
 
+
+    if (hflash->ctable->cmd_cfg[SPI_FLASH_CMD_ERSCUR].cmd == 0)
+    {
+        /* do nothing */
+        return 0;
+    }
+
     srh = HAL_QSPI_GET_OTP_LB(hflash, addr);
     //rt_kprintf("srh = %d\n", srh);
     opbit = addr >> 12;
@@ -2544,6 +2551,8 @@ __HAL_ROM_USED int HAL_QSPI_WRITE_OTP(FLASH_HandleTypeDef *hflash, uint32_t addr
     int res, opbit;
     HAL_StatusTypeDef ret;
     uint32_t param;
+    uint32_t level;
+    int32_t idx;
 
     if (hflash == NULL || hflash->ctable == NULL)
         return 0;
@@ -2552,6 +2561,32 @@ __HAL_ROM_USED int HAL_QSPI_WRITE_OTP(FLASH_HandleTypeDef *hflash, uint32_t addr
 
     if ((addr & 0x3ff) + size   > hflash->ctable->oob_size * 256)
         return 0;
+
+
+    if (hflash->ctable->cmd_cfg[SPI_FLASH_CMD_PRSCUR].cmd == 0)
+    {
+        /* get row index */
+        idx = (addr >> 12);
+        /* page 1 to row 0 */
+        idx -= 1;
+        if ((idx < 0) || (idx >= hflash->ctable->mode_reg))
+        {
+            return 0;
+        }
+
+        /* 512 bytes each row */
+        addr = (idx << 9);
+
+        level = HAL_DisableInterrupt();
+
+        HAL_FLASH_ISSUE_CMD(hflash, SPI_FLASH_CMD_ENSO, 0);
+        dlen = HAL_QSPIEX_WRITE_PAGE(hflash, addr, buf, size);
+        HAL_FLASH_ISSUE_CMD(hflash, SPI_FLASH_CMD_EXSO, 0);
+
+        HAL_EnableInterrupt(level);
+
+        return dlen;
+    }
 
     srh = HAL_QSPI_GET_OTP_LB(hflash, addr);
     opbit = addr >> 12;

@@ -1556,16 +1556,47 @@ __HAL_ROM_USED int HAL_QSPI_READ_OTP(FLASH_HandleTypeDef *hflash, uint32_t addr,
     int cnt = 0;
     int i;
     uint32_t temp_addr = addr;
-    while (remain > 0)
+    uint32_t level;
+    if (hflash->ctable->cmd_cfg[SPI_FLASH_CMD_RDSCUR].cmd != 0)
     {
-        dlen = remain > MPI_MAX_FIFO ? MPI_MAX_FIFO : remain;
-        HAL_FLASH_WRITE_DLEN(hflash, dlen);
-        HAL_FLASH_ISSUE_CMD(hflash, SPI_FLASH_CMD_RDSCUR, temp_addr);
-        for (i = 0; i < dlen / 4; i++)
-            data[i + cnt / 4] = HAL_FLASH_READ32(hflash);
-        cnt += dlen;
-        temp_addr += dlen;
-        remain -= dlen;
+        while (remain > 0)
+        {
+            dlen = remain > MPI_MAX_FIFO ? MPI_MAX_FIFO : remain;
+            HAL_FLASH_WRITE_DLEN(hflash, dlen);
+            HAL_FLASH_ISSUE_CMD(hflash, SPI_FLASH_CMD_RDSCUR, temp_addr);
+            for (i = 0; i < dlen / 4; i++)
+                data[i + cnt / 4] = HAL_FLASH_READ32(hflash);
+            cnt += dlen;
+            temp_addr += dlen;
+            remain -= dlen;
+        }
+    }
+    else
+    {
+        /* get row index, starting from 0 */
+        cnt = (addr >> 12);
+        /* page 1 to row 0 */
+        cnt -= 1;
+        if ((cnt < 0) || (cnt >= hflash->ctable->mode_reg))
+        {
+            return 0;
+        }
+        /* 512 byte each row */
+        temp_addr = hflash->base + (cnt << 9);
+
+        level = HAL_DisableInterrupt();
+
+        SCB_InvalidateDCache_by_Addr((uint32_t *)temp_addr, size);
+        HAL_FLASH_ISSUE_CMD(hflash, SPI_FLASH_CMD_ENSO, 0);
+        for (i = 0; i < size / 4; i++)
+        {
+            data[i] = *((uint32_t *)temp_addr + i);
+        }
+        HAL_FLASH_ISSUE_CMD(hflash, SPI_FLASH_CMD_EXSO, 0);
+
+        SCB_InvalidateDCache_by_Addr((uint32_t *)temp_addr, size);
+
+        HAL_EnableInterrupt(level);
     }
 
     return size;
